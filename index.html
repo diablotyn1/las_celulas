@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Células</title>
+    <style>
+        body {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            background-image: url('images/fondo3.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.9);
+            background-image: url('images/fondo.png');
+            background-size: cover; 
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .tabs, .subtabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab, .subtab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #ddd;
+            border: none;
+            outline: none;
+        }
+        .tab.active, .subtab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .cell-explorer {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .cell-image {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .cell-image img {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: contain;
+        }
+        .cell-part-button {
+            position: absolute;
+            padding: 5px 10px;
+            color: black;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .cell-part-button:hover {
+            opacity: 1;
+        }
+        .cell-info {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        footer {
+            background: rgba(0, 0, 0, 0.7); /* Fondo negro semitransparente */
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Explorador de Células</h1>
+        <div class="tabs">
+            <button class="tab active" data-cell="prokaryotic">Célula Procariota</button>
+            <button class="tab" data-cell="eukaryotic">Célula Eucariota</button>
+        </div>
+        
+        <div class="subtabs hidden">
+            <button class="subtab active" data-subtype="animal">Animal</button>
+            <button class="subtab" data-subtype="plant">Vegetal</button>
+            <button class="subtab" data-subtype="cytoplasm">Estructura</button>
+        </div>
+        <div class="cell-explorer">
+            <div class="cell-image">
+                <!-- La imagen se insertará aquí dinámicamente -->
+            </div>
+            <div class="cell-info">
+                <h2 id="partName">Selecciona una parte de la célula</h2>
+                <p id="partDescription"></p>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>Dra. Alejandra Melissa Ignacio Zurita  </p>
+    </footer>
+    <script>
+        const cellData = {
+            prokaryotic: [
+                { name: "Pared celular", description: "Capa rígida que proporciona protección y forma.", x: 40, y: 15, color: "#139224" },
+                { name: "Membrana plasmática", description: "Barrera selectiva que controla el paso de sustancias es la que divide el interior y exterior de la célula.", x: 35, y: 40, color: "#33b8b1  " },
+                { name: "Citoplasma", description: "Medio interno donde ocurren las reacciones celulares que esta en el interior de la célula.", x: 60, y: 48, color: "#b5e7df" },
+                { name: "Plásmidos", description: "Moléculas de ADN que contiene 2 a 30 genes.", x: 74, y: 40, color: "#e42512" },
+                { name: "Ribosomas", description: "Estructuras donde se sintetizan las proteínas requeridas por las células.", x: 80, y: 60, color: "#97dba3" },
+                { name: "Nucleoide", description: "Es el material genético indispensable para la reproducción de la célula.", x: 50, y: 30, color: "#ff0000" },
+                { name: "Pilis", description: "Son apendices pilosos cortos, finos que se encuentran en las superficies de muchas bacterias.", x: 59, y: 75, color: "#1b812d" },
+                { name: "Flagelo", description: "Formado por microtúbulos responsables de la locomoción de la célula tienen forma de látigo.", x: 19, y: 10, color: "#13cba7" }
+            ],
+            eukaryotic: {
+                animal: [
+                    { name: "Núcleolo", description: "Es una estructura esférica donde se fabrican y ensamblan los ribosomas es rico en ARN y Proteinas.", x: 60, y: 15, color: "#8e0000" },
+                    { name: "Núcleo Celular", description: "Es una estructura esférica u ovalada que constituye el elemento más destacado de la célula, contiene 1 o mas cuerpos esféricos denominados nucleolos, esta rodeado por una envoltura o membrana nuclear", x: 70, y: 5, color: "#d506d1" },
+                    { name: "Ribosomas", description: "Son los sitios de sintesis de proteinas tienen un alto contenido de Acido Ribonucleico (ARN ribosómico), algunos ribosomas se encuentran en la superficie y algunos son libres.", x: 80, y: 42, color: "#0dcfc9" },
+                    { name: "Vesícula", description: "Llevan las enzimas digestivas hacia los lisosomas, emergen del aparato de Golgi", x: 90, y: 28, color: "#1c840b" },
+                    { name: "Retículo endoplasmico Rugoso", description: "Recibe proteinas de los Ribosomas para su procesamiento y distribución pueden unirse a hidratos de carbonos llamandose glucoproteinas o unirse lipidos llamandose lipoproteinas.", x: 43, y: 32, color: "#00d7ff" },
+                    { name: "Aparato de Golgi", description: "Tiene 2 caras una cara CIS que mira al RER y la cara TRANS que mira a la membrana plasmática sirve de empaquetamiento y modificación de proteinas.", x: 57, y: 60, color: "#96103a" },
+                    { name: "Microtúbulo", description: "Son tubos largos, huecos y no ramificados compuestos por tubulina, dan forma a la celula y facilitan el movimiento de los organelos y de los cromosomas durante la división celular y también se encuentran en células como cilios y los flagelos.", x: 30, y: 80, color: "#161753" },
+                    { name: "Retículo endoplasmático liso", description: "Se extiende desde el RER carece de ribosomas contiene enzimas que pueden sintetizar acidos grasos y esteroides como los estrogenos y la testosterona, ayuda a eliminar medicamentos y sustancias nocivas como el alcohol.", x: 25, y: 43, color: "#64b5e3" },
+                    { name: "Mitocondria", description: "Es el organelo encargado de la producción de energia llamada ATP (Adenosin Trifosfato) a través de la respiración celular, esta formada por una membrana externa, una membrana interna, un liquido entre ambas llamada matriz.", x: 7, y: 20, color: "#ea800c" },
+                    { name: "Citosol", description: "Constituye alrededor del 55% del volumen celular esta formado por un 70 a 95% de agua, es una matriz líquida con sustancias para el mantenimiento de las células como sales, proteinas, azúcares, nucleotidos y agua.", x: 8, y: 32, color: "#00d7ff" },
+                    { name: "Lisosoma", description: "Son vesículas que se forman en el aparato de golgi, tiene mas de 60 tipos de enzimas digestivas que degradan en la fagocitosis, pinocitosis y endocitosis mediada por receptores.", x: 52, y: 5, color: "#e32929" },
+                    { name: "Centriolos", description: "Es una estructura cilindrica compuesta por 9 complejos de 3 microtúbulos que ayudan en la división celular.", x: 25, y: 20, color: "#ebd72c" },
+                    { name: "Membrana Celular", description: "Esta formada por una doble capa de lípidos, proteinas y colesterol denominado como un mosaico fluido.", x: 50, y: 80, color: "#d9e0e2" } 
+                ],
+                plant: [
+                    { name: "Núcleo", description: "La estructura de la célula que contiene los cromosomas. El núcleo tiene una membrana que lo rodea y es el lugar donde se elabora el ARN con el ADN de los cromosomas.", x: 78, y: 17, color: "#f651e6" },
+                    { name: "Núcleolo", description: "Región dentro del núcleo de las células eucariotas. Se encarga de producir y ensamblar los ribosomas, que son los complejos responsables de la síntesis proteica, es decir, de la traducción de las moléculas de ARN mensajero a proteínas.", x: 70, y: 12, color: "#f7f700" },
+                    { name: "Cloroplasto", description: "Son los organelos encargados de llevar a cabo la fotosíntesis en plantas; estos evolucionaron a partir de bacterias fotosintéticas. Los cloroplastos contienen su propio ADN, en el cual se encuentran codificados genes necesarios para su funcionamiento, contiene a la clorofila (pigmento verde) que le da color a las plantas u hojas", x: 50, y: 45, color: "#32CD32" },
+                    { name: "Vacuola", description: "Son cuerpos parecidos a las burbujas rodeados por una membrana que puede llegar a ocupar hasta tres cuartas partes del volumen de la célula contienen sustancias como proteinas, grasas y pigmentos, proporciona firmeza a la planta.", x: 30, y: 20, color: "#87CEEB" },
+                    { name: "Mitocondria", description: "Produce la mayor parte de la energía de la célula y cuentan con su propio material genético, que difiere del material genético del núcleo.", x: 10, y: 44, color: "#eb1010" },
+                    { name: "Membrana Celular", description: "Es la estructura fina que envuelve a la célula y separa el contenido de la célula de su entorno, da rigidez, soporte y resistencia a la célula. Es la encargada de permitir o bloquear la entrada de sustancias.", x: 35, y: 60, color: "#3ef528" },
+                    { name: "Pared celular", description: "Es la envoltura que rodea totalmente el cloroplasto de las células vegetales. Rodea a la membrama plasmática, esta compuesto principalmente por celulosa.", x: 80, y: 55, color: "#b8f528" },
+                    { name: "Aparato de Golgi", description: "Es un orgánulo celular cuya principal tarea es recibir proteínas, modificarlas, empaquetarlas y enviarlas al lugar donde hayan de cumplir su función en cada caso, ya sean hormonas, factores de crecimiento o proteínas de membrana.", x: 48, y: 37, color: "#c5d21c" },
+                    { name: "Retículo endoplasmático", description: "El retículo endoplasmático o endoplásmico es un orgánulo que se encuentra en el citoplasma de la célula eucariota, se presenta como una compleja red dispuesta en forma de túbulos, sacos aplanados y cisternas, que están interconectadas entre sí, con una organización variada en los diferentes tipos celulares", x: 58, y: 28, color: "#e3f500" }
+                ],
+                cytoplasm: [  
+                    { name: "Citosol", description: "Constituye alrededor del 55% del volumen celular esta formado por un 70 a 95% de agua, es una matriz líquida con sustancias para el mantenimiento de las células como sales, proteinas, azúcares, nucleotidos y agua.", x: 85, y: 40, color: "#efc9c1" },
+                    { name: "Citoesqueleto", description: "Es una red de fibras de proteina que da forma, soporte a las células y a los organelos. Esta formado por microtubulos, filamentos intermedios y microfilamentos.", x: 85, y: 30, color: "#f0970c" },
+                    { name: "Microfilamentos", description: "Son los elementos más delicados del citoesqueleto formados por Actina. Permiten el movimiento de las sustancias en el interior de las células intervienen en la contracción muscular, la locomoción celular, la división y dan soporte mecánico.", x: 50, y: 85, color: "#c77a03" },
+                    { name: "Organelos", description: "Estructuras delimitadas por una membrana y tiene funciones especificas entre ellos estan los cloroplastos, las mitrocondrias, las vacuolas y el aparato del Golgi.", x: 5, y: 18, color: "#ef5d20" },
+                    { name: "Microtubulos", description: "Es el componente más grande del citoesqueleto. Son tubos largos, huecos y no ramificados compuestos por tubulina, dan forma a la celula y facilitan el movimiento de los organelos y de los cromosomas durante la división celular, tambien se encuentran en células como cilios y los flagelos.", x: 23, y: 48, color: "#2344e4" },
+                    { name: "Filamentos intermedios", description: "Son más gruesos que los microfilamentos pero mas delgados que los microtúbulos. Sostienen algunos organelos como el nucleo, se encuentran en las regiones de la célula sujetas a estres mecánico.", x: 70, y: 70, color: "#ffb6c1" }
+        ]
+            }
+        };
+
+        let currentCell = 'prokaryotic';
+        let currentSubtype = 'animal';
+
+        function getRandomColor() {
+            return "#" + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+        function createButtons(cellType, subtype = null) {
+            const cellImage = document.querySelector('.cell-image');
+            let imageName;
+
+            // Seleccionar el nombre adecuado basado en el tipo de célula y subtipo
+                if (cellType === 'prokaryotic') {
+                imageName = 'Procariota';
+            } else {
+                if (subtype === 'plant') {
+                    imageName = 'Eucariota Vegetal';
+                } else if (subtype === 'animal') {
+                    imageName = 'Eucariota Animal';
+                } else if (subtype === 'cytoplasm') {
+                    imageName = 'Estructura del Citoplasma'; // Nuevo nombre para esta opción
+                }
+            }
+            // Selección de la imagen basada en el tipo de célula
+            let imageUrl;
+            if (cellType === 'prokaryotic') {
+                imageUrl = 'images/Procariota.png';
+            } else if (subtype === 'plant') {
+                imageUrl = 'images/CelVegetal.png';
+            } else if (subtype === 'animal') {
+                imageUrl = 'images/CelAnimal.png';
+            } else if (subtype === 'cytoplasm') {
+                imageUrl = 'images/Estructura3.png'; // Imagen para la estructura del citoplasma
+            }
+
+            // Insertar la imagen con texto alternativo apropiado
+            cellImage.innerHTML = `<img id="cellImage" src="${imageUrl}" alt="Imagen de Célula ${imageName}">`;
+            
+            // Limpiar botones existentes
+            document.querySelectorAll('.cell-part-button').forEach(button => button.remove());
+            
+            // Crear nuevos botones para las partes de la célula
+            let parts = cellType === 'prokaryotic' ? cellData[cellType] : cellData[cellType][subtype];
+            parts.forEach(part => {
+                const button = document.createElement('button');
+                button.className = 'cell-part-button';
+                button.textContent = part.name;
+                button.style.left = `${part.x}%`;
+                button.style.top = `${part.y}%`;
+                button.style.backgroundColor = part.color || getRandomColor();
+                button.onclick = () => showPartInfo(part);
+                cellImage.appendChild(button);
+            });
+        }
+
+        function showPartInfo(part) {
+            document.getElementById('partName').textContent = part.name;
+            document.getElementById('partDescription').textContent = part.description;
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentCell = tab.dataset.cell;
+                if (currentCell === 'eukaryotic') {
+                    document.querySelector('.subtabs').classList.remove('hidden');
+                    createButtons(currentCell, currentSubtype);
+                } else {
+                    document.querySelector('.subtabs').classList.add('hidden');
+                    createButtons(currentCell);
+                }
+            });
+        });
+
+        document.querySelectorAll('.subtab').forEach(subtab => {
+            subtab.addEventListener('click', () => {
+                document.querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
+                subtab.classList.add('active');
+                currentSubtype = subtab.dataset.subtype;
+                createButtons(currentCell, currentSubtype);
+            });
+        });
+
+        // Inicializar con la célula procariota
+        createButtons('prokaryotic');
+    </script>
+</body>
+</html>
